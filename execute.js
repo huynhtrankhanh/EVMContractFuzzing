@@ -1,6 +1,6 @@
 const web3 = require('web3');
 const solc = require("solc");
-const { BN, toWei } = require('web3-utils');
+const { toWei } = require('web3-utils');
 const { Transaction } = require('@ethereumjs/tx');
 const { Common, Chain, Hardfork } = require('@ethereumjs/common');
 const { VM } = require('@ethereumjs/vm');
@@ -121,8 +121,8 @@ async function main() {
     const bytecode = output.contracts['PrimeFactorizationGame.sol']['PrimeFactorizationGame'].evm.bytecode.object;
 
     const account = Account.fromAccountData({
-      nonce: new BN(0),
-      balance: new BN(10000000000), // initial balance
+      nonce: 0n,
+      balance: 10000000000n, // initial balance
     });
     await vm.stateManager.putAccount(address, account);
     const retrievedAccount = await vm.stateManager.getAccount(address);
@@ -149,7 +149,7 @@ async function main() {
         value: toWei('1000', 'ether'),
         gasLimit: 21000,
         gasPrice: toWei('20', 'gwei'),
-        nonce: nonce.addn(1).toNumber(),
+        nonce: Number(nonce) + 1,
     };
 
     const depositTx = Transaction.fromTxData(depositTxData, { common }).sign(privateKey);
@@ -169,7 +169,7 @@ async function main() {
             data: claimPrizeData,
             gasLimit: 1000000,
             gasPrice: toWei('20', 'gwei'),
-            nonce: nonce.addn(2 + i).toNumber(),
+            nonce: Number(nonce) + 2 + i,
         };
 
         const claimTx = Transaction.fromTxData(claimTxData, { common }).sign(privateKey);
