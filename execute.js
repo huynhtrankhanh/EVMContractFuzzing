@@ -1,8 +1,8 @@
 const Web3 = require('web3');
 const { BN, toWei } = require('web3-utils');
 const { Transaction } = require('@ethereumjs/tx');
-const { default: Common, Chain, Hardfork } = require('@ethereumjs/common');
-const { default: VM } = require('@ethereumjs/vm');
+const { Common, Chain, Hardfork } = require('@ethereumjs/common');
+const { VM } = require('@ethereumjs/vm');
 const { Account, Address, privateToAddress, toBuffer } = require('ethereumjs-util');
 const keythereum = require("keythereum");
 const privateKey = keythereum.create({ keyBytes: 32, ivBytes: 16 }).privateKey;
