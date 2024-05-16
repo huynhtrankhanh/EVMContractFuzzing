@@ -1,4 +1,5 @@
 const web3 = require('web3');
+const solc = require("solc");
 const { BN, toWei } = require('web3-utils');
 const { Transaction } = require('@ethereumjs/tx');
 const { Common, Chain, Hardfork } = require('@ethereumjs/common');
@@ -115,13 +116,7 @@ async function main() {
         },
     };
 
-    const output = JSON.parse(
-        await new Promise((resolve, reject) =>
-            require('solc').compile(JSON.stringify(input), (err, result) =>
-                err ? reject(err) : resolve(result)
-            )
-        )
-    );
+    const output = JSON.parse(solc.compile(JSON.stringify(input)));
 
     const abi = output.contracts['PrimeFactorizationGame.sol']['PrimeFactorizationGame'].abi;
     const bytecode = output.contracts['PrimeFactorizationGame.sol']['PrimeFactorizationGame'].evm.bytecode.object;
