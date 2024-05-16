@@ -1,17 +1,17 @@
 const web3 = require('web3');
 const solc = require("solc");
 const { toWei } = require('web3-utils');
-const { Transaction } = require('@ethereumjs/tx');
+const { LegacyTransaction } = require('@ethereumjs/tx');
 const { Common, Chain, Hardfork } = require('@ethereumjs/common');
 const { VM } = require('@ethereumjs/vm');
-const { Account, Address, privateToAddress, toBuffer } = require('ethereumjs-util');
+const { Account, Address, privateToAddress, toBuffer } = require('@ethereumjs/util');
 const keythereum = require("keythereum");
 const privateKey = keythereum.create({ keyBytes: 32, ivBytes: 16 }).privateKey;
 const senderAddress = Address.fromPrivateKey(privateKey);
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London });
-const vm = new VM({ common });
 
 async function main() {
+    const vm = await VM.create({ common });
     const contractCode = `
         pragma solidity ^0.8.0;
 
@@ -121,22 +121,22 @@ async function main() {
     const bytecode = output.contracts['PrimeFactorizationGame.sol']['PrimeFactorizationGame'].evm.bytecode.object;
 
     const account = Account.fromAccountData({
-      nonce: 0n,
+      nonce: 0,
       balance: 10000000000n, // initial balance
     });
-    await vm.stateManager.putAccount(address, account);
-    const retrievedAccount = await vm.stateManager.getAccount(address);
+    await vm.stateManager.putAccount(senderAddress, account);
+    const retrievedAccount = await vm.stateManager.getAccount(senderAddress);
 
     // Deploy the contract
-    const nonce = await vm.stateManager.getAccountNonce(senderAddress);
+    const nonce = retrievedAccount.nonce;
     const deployTxData = {
         data: `0x${bytecode}`,
-        gasLimit: 1000000,
-        gasPrice: toWei('20', 'gwei'),
-        nonce: retrievedAccount.nonce.toNumber(),
+        gasLimit: 1000000n,
+        gasPrice: BigInt(toWei('20', 'gwei')),
+        nonce: retrievedAccount.nonce,
     };
 
-    const tx = Transaction.fromTxData(deployTxData, { common }).sign(privateKey);
+    const tx = LegacyTransaction.fromTxData(deployTxData, { common }).sign(privateKey);
     const receipt = await vm.runTx({ tx });
 
     const contractAddress = receipt.receipt.contractAddress;
@@ -146,9 +146,9 @@ async function main() {
     // Initialize the contract with 1000 ETH
     const depositTxData = {
         to: contractAddress,
-        value: toWei('1000', 'ether'),
-        gasLimit: 21000,
-        gasPrice: toWei('20', 'gwei'),
+        value: BigInt(toWei('1000', 'ether')),
+        gasLimit: 21000n,
+        gasPrice: BigInt(toWei('20', 'gwei')),
         nonce: Number(nonce) + 1,
     };
 
@@ -167,8 +167,8 @@ async function main() {
         const claimTxData = {
             to: contractAddress,
             data: claimPrizeData,
-            gasLimit: 1000000,
-            gasPrice: toWei('20', 'gwei'),
+            gasLimit: 1000000n,
+            gasPrice: BigInt(toWei('20', 'gwei')),
             nonce: Number(nonce) + 2 + i,
         };
 
