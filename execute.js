@@ -122,7 +122,7 @@ async function main() {
 
     const account = Account.fromAccountData({
       nonce: 0,
-      balance: 10000000000n, // initial balance
+      balance: BigInt(toWei('1000000', 'ether')), // initial balance
     });
     await vm.stateManager.putAccount(senderAddress, account);
     const retrievedAccount = await vm.stateManager.getAccount(senderAddress);
@@ -139,7 +139,7 @@ async function main() {
     const tx = LegacyTransaction.fromTxData(deployTxData, { common }).sign(privateKey);
     const receipt = await vm.runTx({ tx });
 
-    const contractAddress = receipt.receipt.contractAddress;
+    const contractAddress = receipt.createdAddress;
 
     console.log('Contract deployed at:', contractAddress.toString());
 
@@ -152,12 +152,13 @@ async function main() {
         nonce: Number(nonce) + 1,
     };
 
-    const depositTx = Transaction.fromTxData(depositTxData, { common }).sign(privateKey);
+    const depositTx = LegacyTransaction.fromTxData(depositTxData, { common }).sign(privateKey);
     await vm.runTx({ tx: depositTx });
 
     console.log('1000 ETH sent to contract:', contractAddress.toString());
 
     // Assume the contract is initialized successfully, now claim rewards
+    let numbers = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71];
     for (let i = 0; i < 20; i++) {
         const claimPrizeData = web3.eth.abi.encodeFunctionCall(abi.find((f) => f.name === 'claimPrize'), [
             i,
