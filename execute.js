@@ -8,14 +8,8 @@ const { Account, Address, privateToAddress, toBuffer } = require('ethereumjs-uti
 const keythereum = require("keythereum");
 const privateKey = keythereum.create({ keyBytes: 32, ivBytes: 16 }).privateKey;
 const senderAddress = Address.fromPrivateKey(privateKey);
-const account = Account.fromAccountData({
-  nonce: new BN(0),
-  balance: new BN(10000000000), // initial balance
-});
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London });
 const vm = new VM({ common });
-await vm.stateManager.putAccount(address, account);
-const retrievedAccount = await vm.stateManager.getAccount(address);
 
 async function main() {
     const contractCode = `
@@ -125,6 +119,13 @@ async function main() {
 
     const abi = output.contracts['PrimeFactorizationGame.sol']['PrimeFactorizationGame'].abi;
     const bytecode = output.contracts['PrimeFactorizationGame.sol']['PrimeFactorizationGame'].evm.bytecode.object;
+
+    const account = Account.fromAccountData({
+      nonce: new BN(0),
+      balance: new BN(10000000000), // initial balance
+    });
+    await vm.stateManager.putAccount(address, account);
+    const retrievedAccount = await vm.stateManager.getAccount(address);
 
     // Deploy the contract
     const nonce = await vm.stateManager.getAccountNonce(senderAddress);
