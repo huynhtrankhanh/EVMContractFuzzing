@@ -178,7 +178,7 @@ async function main() {
         const claimTx = LegacyTransaction.fromTxData(claimTxData, { common }).sign(privateKey);
         await vm.runTx({ tx: claimTx });
 
-        console.log(`Prize for number ${numbers[i].value} claimed.`);
+        console.log(`Prize for number ${numbers[i]} claimed.`);
     }
 }
 
