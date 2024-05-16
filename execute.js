@@ -4,8 +4,8 @@ const { Transaction } = require('@ethereumjs/tx');
 const { default: Common, Chain, Hardfork } = require('@ethereumjs/common');
 const { default: VM } = require('@ethereumjs/vm');
 const { Account, Address, privateToAddress, toBuffer } = require('ethereumjs-util');
-
-const privateKey = Buffer.from('YOUR_PRIVATE_KEY', 'hex');
+const keythereum = require("keythereum");
+const privateKey = keythereum.create({ keyBytes: 32, ivBytes: 16 }).privateKey;
 const senderAddress = Address.fromPrivateKey(privateKey);
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London });
