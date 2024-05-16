@@ -8,9 +8,14 @@ const { Account, Address, privateToAddress, toBuffer } = require('ethereumjs-uti
 const keythereum = require("keythereum");
 const privateKey = keythereum.create({ keyBytes: 32, ivBytes: 16 }).privateKey;
 const senderAddress = Address.fromPrivateKey(privateKey);
-
+const account = Account.fromAccountData({
+  nonce: new BN(0),
+  balance: new BN(10000000000), // initial balance
+});
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London });
 const vm = new VM({ common });
+await vm.stateManager.putAccount(address, account);
+const retrievedAccount = await vm.stateManager.getAccount(address);
 
 async function main() {
     const contractCode = `
@@ -127,7 +132,7 @@ async function main() {
         data: `0x${bytecode}`,
         gasLimit: 1000000,
         gasPrice: toWei('20', 'gwei'),
-        nonce: nonce.toNumber(),
+        nonce: retrievedAccount.nonce.toNumber(),
     };
 
     const tx = Transaction.fromTxData(deployTxData, { common }).sign(privateKey);
