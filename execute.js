@@ -1,4 +1,4 @@
-const Web3 = require('web3');
+const web3 = require('web3');
 const { BN, toWei } = require('web3-utils');
 const { Transaction } = require('@ethereumjs/tx');
 const { Common, Chain, Hardfork } = require('@ethereumjs/common');
@@ -10,8 +10,6 @@ const senderAddress = Address.fromPrivateKey(privateKey);
 
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.London });
 const vm = new VM({ common });
-
-const web3 = new Web3();
 
 async function main() {
     const contractCode = `
