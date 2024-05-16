@@ -175,7 +175,7 @@ async function main() {
             nonce: Number(nonce) + 2 + i,
         };
 
-        const claimTx = Transaction.fromTxData(claimTxData, { common }).sign(privateKey);
+        const claimTx = LegacyTransaction.fromTxData(claimTxData, { common }).sign(privateKey);
         await vm.runTx({ tx: claimTx });
 
         console.log(`Prize for number ${numbers[i].value} claimed.`);
