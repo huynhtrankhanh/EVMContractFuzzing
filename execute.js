@@ -164,7 +164,7 @@ async function main() {
         console.log(claimPrize);
         const claimPrizeData = web3.eth.abi.encodeFunctionCall(claimPrize, [
             i,
-            [numbers[i].value], // Prime factors of prime is the number itself.
+            [numbers[i]], // Prime factors of prime is the number itself.
         ]);
 
         const claimTxData = {
