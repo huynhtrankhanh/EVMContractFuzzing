@@ -21,7 +21,7 @@ contract HamiltonianCycle {
         balance += msg.value;
     }
 
-    function setGraph(uint256 _nodeCount, uint256[][] memory _edges) external onlyOwner {
+    function setGraph(uint256 _nodeCount, uint256[][] memory _edges) external onlyOwner returns (string memory) {
         require(!isGraphSet, "Graph is already set");
         nodeCount = _nodeCount;
         for (uint256 i = 0; i < _edges.length; i++) {
@@ -31,6 +31,7 @@ contract HamiltonianCycle {
             edges[from][to] = true;
         }
         isGraphSet = true;
+        return "wo hen gao xing ren shi ni!";
     }
 
     function findHamiltonianCycle(uint256[] memory cycle) external {

@@ -31,26 +31,26 @@ async function main() {
             constructor() {
                 owner = msg.sender;
                 // Initialization
-                numbers[0] = Number(2, 0.5 ether, false);
-                numbers[1] = Number(3, 0.5 ether, false);
-                numbers[2] = Number(5, 1 ether, false);
-                numbers[3] = Number(7, 1.5 ether, false);
-                numbers[4] = Number(11, 2 ether, false);
-                numbers[5] = Number(13, 2.5 ether, false);
-                numbers[6] = Number(17, 3 ether, false);
-                numbers[7] = Number(19, 3.5 ether, false);
-                numbers[8] = Number(23, 4 ether, false);
-                numbers[9] = Number(29, 4.5 ether, false);
-                numbers[10] = Number(31, 5 ether, false);
-                numbers[11] = Number(37, 5.5 ether, false);
-                numbers[12] = Number(41, 6 ether, false);
-                numbers[13] = Number(43, 6.5 ether, false);
-                numbers[14] = Number(47, 7 ether, false);
-                numbers[15] = Number(53, 7.5 ether, false);
-                numbers[16] = Number(59, 8 ether, false);
-                numbers[17] = Number(61, 8.5 ether, false);
-                numbers[18] = Number(67, 9 ether, false);
-                numbers[19] = Number(71, 9.5 ether, false);
+                numbers[0] = Number(2, 50 ether, false);
+                numbers[1] = Number(3, 50 ether, false);
+                numbers[2] = Number(5, 50 ether, false);
+                numbers[3] = Number(7, 50 ether, false);
+                numbers[4] = Number(11, 50 ether, false);
+                numbers[5] = Number(13, 50 ether, false);
+                numbers[6] = Number(17, 50 ether, false);
+                numbers[7] = Number(19, 50 ether, false);
+                numbers[8] = Number(23, 50 ether, false);
+                numbers[9] = Number(29, 50 ether, false);
+                numbers[10] = Number(31, 50 ether, false);
+                numbers[11] = Number(37, 50 ether, false);
+                numbers[12] = Number(41, 50 ether, false);
+                numbers[13] = Number(43, 50 ether, false);
+                numbers[14] = Number(47, 50 ether, false);
+                numbers[15] = Number(53, 50 ether, false);
+                numbers[16] = Number(59, 50 ether, false);
+                numbers[17] = Number(61, 50 ether, false);
+                numbers[18] = Number(67, 50 ether, false);
+                numbers[19] = Number(71, 50 ether, false);
             }
 
             function claimPrize(uint256 numberIndex, uint256[] calldata factors) external {
@@ -132,7 +132,7 @@ async function main() {
     const deployTxData = {
         data: `0x${bytecode}`,
         gasLimit: 1000000n,
-        gasPrice: BigInt(toWei('20', 'gwei')),
+        gasPrice: 7n,
         nonce: retrievedAccount.nonce,
     };
 
@@ -148,7 +148,7 @@ async function main() {
         to: contractAddress,
         value: BigInt(toWei('1000', 'ether')),
         gasLimit: 21000n,
-        gasPrice: BigInt(toWei('20', 'gwei')),
+        gasPrice: 7n,
         nonce: Number(nonce) + 1,
     };
 
@@ -156,12 +156,12 @@ async function main() {
     await vm.runTx({ tx: depositTx });
 
     console.log('1000 ETH sent to contract:', contractAddress.toString());
+    console.log("owner balance:", (await vm.stateManager.getAccount(senderAddress)).balance);
 
     // Assume the contract is initialized successfully, now claim rewards
     let numbers = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71];
     for (let i = 0; i < 20; i++) {
         const claimPrize = abi.find((f) => f.name === 'claimPrize');
-        console.log(claimPrize);
         const claimPrizeData = web3.eth.abi.encodeFunctionCall(claimPrize, [
             i,
             [numbers[i]], // Prime factors of prime is the number itself.
@@ -171,15 +171,16 @@ async function main() {
             to: contractAddress,
             data: claimPrizeData,
             gasLimit: 1000000n,
-            gasPrice: BigInt(toWei('20', 'gwei')),
+            gasPrice: 7n,
             nonce: Number(nonce) + 2 + i,
         };
 
         const claimTx = LegacyTransaction.fromTxData(claimTxData, { common }).sign(privateKey);
-        await vm.runTx({ tx: claimTx });
+        console.log(await vm.runTx({ tx: claimTx }));
 
         console.log(`Prize for number ${numbers[i]} claimed.`);
     }
+    console.log("owner balance:", (await vm.stateManager.getAccount(senderAddress)).balance);
 }
 
 main().catch(console.error);

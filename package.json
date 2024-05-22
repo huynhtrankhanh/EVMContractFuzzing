@@ -5,6 +5,7 @@
     "@ethereumjs/util": "^9.0.3",
     "@ethereumjs/vm": "^8.0.0",
     "ethereumjs-util": "^7.1.5",
+    "fast-check": "^3.18.0",
     "keythereum": "^2.0.0",
     "punycode": "^2.3.1",
     "solc": "^0.8.25",
