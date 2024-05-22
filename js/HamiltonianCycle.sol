@@ -53,7 +53,7 @@ contract HamiltonianCycle {
             require(visited[i], "Not all nodes visited");
         }
 
-        assert(address(this).balance == balance, "Contract balance mismatch");
+        assert(address(this).balance == balance);
 
         selfdestruct(payable(msg.sender));
     }
