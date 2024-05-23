@@ -15,8 +15,8 @@ contract PushCall {
 
     Call[] public calls;
 
-    constructor(address _primeContractAddress) {
-        primeContract = PrimeFactorizationGame(_primeContractAddress);
+    constructor() {
+        primeContract = new PrimeFactorizationGame();
     }
 
     function push(uint256 fnCode, uint256 arg1, uint256[] calldata arg2) external {
