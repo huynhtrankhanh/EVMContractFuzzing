@@ -34,7 +34,7 @@ contract AAAAAAAAAAAAAAAAAAAAAAAAAAAFuzzFestival {
 
 contract Anonymous {
     FestivalContract saved;
-    constructor(FestivalContract festivalContract) {
+    constructor(FestivalContract festivalContract) payable {
         festivalContract.contribute{value: 1 ether}();
         saved = festivalContract;
     }
