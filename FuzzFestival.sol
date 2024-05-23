@@ -15,7 +15,6 @@ contract FuzzFestival {
     }
     function sendNormal() external payable {
         require(msg.value >= 1 ether, "");
-        assert(false);
         festivalContract.contribute{value: 1 ether}();
         counter = counter + 1;
         if (counter == 10) {
