@@ -2,6 +2,7 @@ import "./Festival.sol";
 import "./ForcedEtherTransfer.sol";
 
 contract FuzzFestival {
+    event AssertionFailed(string x);
     ForcedEtherTransfer public forcedEtherTransfer;
     FestivalContract public festivalContract;
     uint256 counter;
@@ -17,13 +18,15 @@ contract FuzzFestival {
         require(msg.value >= 1 ether, "");
         festivalContract.contribute{value: 1 ether}();
         counter = counter + 1;
-        if (counter == 3) {
+        if (counter == 10) {
             // can claim!
             uint256 previous = address(this).balance;
-            festivalContract.claim();
+            try festivalContract.claim() {
+            } catch {
+                emit AssertionFailed("no");
+            }
             uint256 current = address(this).balance;
             assert(current - previous >= 3 ether);
-            assert(false);
         }
     }
     function sendAnonymous() external payable {
@@ -31,6 +34,7 @@ contract FuzzFestival {
         Anonymous entity = new Anonymous{value: 1 ether}(festivalContract);
         counter = counter + 1;
     }
+    fallback() external payable {}
 }
 
 contract Anonymous {

@@ -5,6 +5,7 @@ contract FestivalContract {
 
     // Event to log contributions
     event Contribution(address indexed sender, uint256 amount);
+    event AttemptingClaim(address sender, address winner);
 
     // Event to announce the winner
     event WinnerAnnounced(address winner, uint256 totalAmount);
@@ -15,7 +16,7 @@ contract FestivalContract {
         emit Contribution(msg.sender, msg.value);
 
         // Check if total balance reaches 3 ether
-        if (address(this).balance == 3 ether) {
+        if (address(this).balance == 10 ether) {
             winner = msg.sender;
             emit WinnerAnnounced(winner, address(this).balance);
         }
@@ -23,6 +24,7 @@ contract FestivalContract {
 
     // Function for winner to claim their reward
     function claim() external {
+        emit AttemptingClaim(msg.sender, winner);
         require(winner == msg.sender, "You are not the winner");
         payable(msg.sender).transfer(address(this).balance);
     }
