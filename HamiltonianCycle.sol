@@ -1,5 +1,35 @@
 pragma solidity ^0.8.0;
 
+contract MasterContract {
+    ForcedEtherTransfer public forcedEtherTransfer;
+    HamiltonianCycle public hamiltonianCycle;
+
+    constructor() {
+        forcedEtherTransfer = new ForcedEtherTransfer();
+        hamiltonianCycle = new HamiltonianCycle();
+    }
+
+    // Function to call shoot from ForcedEtherTransfer
+    function shootEther(address payable _target) external payable {
+        forcedEtherTransfer.shoot{value: msg.value}(_target);
+    }
+
+    // Function to deposit ether into HamiltonianCycle
+    function depositEther() external payable {
+        hamiltonianCycle.deposit{value: msg.value}();
+    }
+
+    // Function to set a graph in HamiltonianCycle
+    function setGraph(uint256 _nodeCount, uint256[][] memory _edges) external {
+        hamiltonianCycle.setGraph(_nodeCount, _edges);
+    }
+
+    // Function to find Hamiltonian cycle in HamiltonianCycle
+    function findCycle(uint256[] memory _cycle) external {
+        hamiltonianCycle.findHamiltonianCycle(_cycle);
+    }
+}
+
 contract ForcedEtherTransfer {
     
     // Function to forcefully send Ether to an address
