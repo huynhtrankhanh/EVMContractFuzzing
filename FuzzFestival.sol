@@ -1,7 +1,7 @@
 import "./Festival.sol";
 import "./ForcedEtherTransfer.sol";
 
-contract AAAAAAAAAAAAAAAAAAAAAAAAAAAFuzzFestival {
+contract FuzzFestival {
     ForcedEtherTransfer public forcedEtherTransfer;
     FestivalContract public festivalContract;
     uint256 counter;
