@@ -78,9 +78,6 @@ contract HamiltonianCycle {
     }
 }
 
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
 contract DeploymentAndAttack {
     HamiltonianCycle public hamiltonianCycle;
     ForcedEtherTransfer public forcedEtherTransfer;
