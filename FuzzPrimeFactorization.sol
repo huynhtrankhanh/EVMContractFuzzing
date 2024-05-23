@@ -23,25 +23,25 @@ contract PushCall {
         calls.push(Call(fnCode, arg1, arg2));
     }
 
-    function take() external {
+    function take() external payable {
         require(counter < calls.length, "No more calls to process.");
         Call storage currentCall = calls[counter];
         counter++;
         assert(totalMoneyReceived <= 200 ether);
 
-        if (currentCall.fnCode == 0) {
+        if (currentCall.fnCode % 3 == 0) {
             // Call claimPrize(uint256 numberIndex, uint256[] calldata factors) on primeContract
             uint256 initialBalance = address(this).balance;
-            primeContract.claimPrize(currentCall.arg1, currentCall.arg2);
+            primeContract.claimPrize(currentCall.arg1 % 20, [currentCall.arg2[0] % 20]);
             uint256 finalBalance = address(this).balance;
             totalMoneyReceived += finalBalance - initialBalance;
-        } else if (currentCall.fnCode == 1) {
+        } else if (currentCall.fnCode % 3 == 1) {
             // Call deposit() on primeContract with arg1 as value
             (bool success, ) = address(primeContract).call{value: currentCall.arg1}(
                 abi.encodeWithSignature("deposit()")
             );
             require(success, "Deposit failed");
-        } else if (currentCall.fnCode == 2) {
+        } else if (currentCall.fnCode % 3 == 2) {
             // Call withdraw(uint256 amount) on primeContract
             primeContract.withdraw(currentCall.arg1);
         } else {
