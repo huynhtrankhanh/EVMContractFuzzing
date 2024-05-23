@@ -90,7 +90,7 @@ contract DeploymentAndAttack {
         hamiltonianCycle = new HamiltonianCycle();
 
         // Step 2: Deposit 1 ether into the HamiltonianCycle contract
-        (bool success, ) = address(hamiltonianCycle).call{value: 1 ether}(abi.encodeWithSignature("deposit()"));
+        (bool success, ) = address(hamiltonianCycle).call{value: msg.value / 2}(abi.encodeWithSignature("deposit()"));
         require(success, "Deposit failed");
 
         // Step 3: Set the graph in the HamiltonianCycle contract
@@ -108,7 +108,7 @@ contract DeploymentAndAttack {
 
         // Step 4: Force Ether into the HamiltonianCycle contract
         forcedEtherTransfer = new ForcedEtherTransfer();
-        forcedEtherTransfer.shoot{value: 0.5 ether}(payable(address(hamiltonianCycle)));
+        forcedEtherTransfer.shoot{value: msg.value / 2}(payable(address(hamiltonianCycle)));
 
         // Step 5: Call the findHamiltonianCycle function with a valid cycle
         uint256[] memory cycle = new uint256[](3);
