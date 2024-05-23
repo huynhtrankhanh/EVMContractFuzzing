@@ -14,8 +14,8 @@ contract FestivalContract {
         require(msg.value == 1 ether, "You can only send 1 ether at a time");
         emit Contribution(msg.sender, msg.value);
 
-        // Check if total balance reaches 10 ether
-        if (address(this).balance == 10 ether) {
+        // Check if total balance reaches 3 ether
+        if (address(this).balance == 3 ether) {
             winner = msg.sender;
             emit WinnerAnnounced(winner, address(this).balance);
         }
