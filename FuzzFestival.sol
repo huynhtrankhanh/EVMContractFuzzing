@@ -1,7 +1,7 @@
 import "./Festival.sol";
 import "./ForcedEtherTransfer.sol";
 
-contract FuzzFestival {
+contract AAAAAAAAAAAAAAAAAAAAAAAAAAAFuzzFestival {
     ForcedEtherTransfer public forcedEtherTransfer;
     FestivalContract public festivalContract;
     uint256 counter;
@@ -14,8 +14,18 @@ contract FuzzFestival {
         forcedEtherTransfer.shoot{value: msg.value}(_target);
     }
     function sendNormal() external payable {
-        require(msg.value >= 1, "");
+        require(msg.value >= 1 ether, "");
         festivalContract.contribute{value: 1 ether}();
         counter = counter + 1;
+    }
+    function sendAnonymous() external payable {
+        require(msg.value >= 1 ether, "");
+        new Anonymous{value: 1 ether}(festivalContract);
+    }
+}
+
+contract Anonymous {
+    constructor(FestivalContract festivalContract) {
+        festivalContract.contribute{value: 1 ether}();
     }
 }
