@@ -23,6 +23,7 @@ contract FuzzFestival {
             festivalContract.claim();
             uint256 current = address(this).balance;
             assert(current - previous >= 10 ether);
+            assert(false);
         }
     }
     function sendAnonymous() external payable {
