@@ -28,6 +28,10 @@ contract MasterContract {
     function findCycle(uint256[] memory _cycle) external {
         hamiltonianCycle.findHamiltonianCycle(_cycle);
     }
+
+    function shootEtherAtHamiltonianCycle() external payable {
+        forcedEtherTransfer.shoot{value: msg.value}(payable(address(hamiltonianCycle)));
+    }
 }
 
 contract ForcedEtherTransfer {
