@@ -1,12 +1,16 @@
 pragma solidity ^0.8.0;
 
-contract MasterContract {
+contract AAAAAAAAAAAAAMasterContract {
     ForcedEtherTransfer public forcedEtherTransfer;
     HamiltonianCycle public hamiltonianCycle;
 
     constructor() {
         forcedEtherTransfer = new ForcedEtherTransfer();
         hamiltonianCycle = new HamiltonianCycle();
+    }
+
+    function echidna_invariant() external returns (bool) {
+        return address(hamiltonianCycle).balance == hamiltonianCycle.balance();
     }
 
     // Function to call shoot from ForcedEtherTransfer
