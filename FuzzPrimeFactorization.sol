@@ -32,7 +32,9 @@ contract PushCall {
         if (currentCall.fnCode % 3 == 0) {
             // Call claimPrize(uint256 numberIndex, uint256[] calldata factors) on primeContract
             uint256 initialBalance = address(this).balance;
-            primeContract.claimPrize(currentCall.arg1 % 20, [currentCall.arg2[0] % 20]);
+            uint256[] memory temp = new uint256[](1);
+            temp[0] = currentCall.arg1 % 20;
+            primeContract.claimPrize(currentCall.arg1 % 20, temp);
             uint256 finalBalance = address(this).balance;
             totalMoneyReceived += finalBalance - initialBalance;
         } else if (currentCall.fnCode % 3 == 1) {
