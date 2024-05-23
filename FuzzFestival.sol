@@ -17,15 +17,25 @@ contract AAAAAAAAAAAAAAAAAAAAAAAAAAAFuzzFestival {
         require(msg.value >= 1 ether, "");
         festivalContract.contribute{value: 1 ether}();
         counter = counter + 1;
+        if (counter == 10) {
+            // can claim!
+            uint256 previous = address(this).balance;
+            festivalContract.claim();
+            uint256 current = address(this).balance;
+            assert(current - previous >= 10 ether);
+        }
     }
     function sendAnonymous() external payable {
         require(msg.value >= 1 ether, "");
-        new Anonymous{value: 1 ether}(festivalContract);
+        Anonymous entity = new Anonymous{value: 1 ether}(festivalContract);
+        counter = counter + 1;
     }
 }
 
 contract Anonymous {
+    FestivalContract saved;
     constructor(FestivalContract festivalContract) {
         festivalContract.contribute{value: 1 ether}();
+        saved = festivalContract;
     }
 }
