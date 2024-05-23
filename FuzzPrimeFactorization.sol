@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-import "./PrimeFactorizationGame.sol";
+import "./PrimeFactorization.sol";
 
 contract PushCall {
     PrimeFactorizationGame public primeContract;
