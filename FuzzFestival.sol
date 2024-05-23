@@ -17,12 +17,12 @@ contract FuzzFestival {
         require(msg.value >= 1 ether, "");
         festivalContract.contribute{value: 1 ether}();
         counter = counter + 1;
-        if (counter == 10) {
+        if (counter == 3) {
             // can claim!
             uint256 previous = address(this).balance;
             festivalContract.claim();
             uint256 current = address(this).balance;
-            assert(current - previous >= 10 ether);
+            assert(current - previous >= 3 ether);
             assert(false);
         }
     }
