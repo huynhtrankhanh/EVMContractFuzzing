@@ -2,4 +2,4 @@
 For prethesis and potentially thesis at HCMIU
 
 ## Strategy
-Use EthereumJS along with fast-check. Will incorporate jsfuzz in the future.
+Use Echidna. Add some auxiliary smart contracts to guide the fuzzer to the right path.
