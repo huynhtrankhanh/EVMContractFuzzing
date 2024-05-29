@@ -1,4 +1,14 @@
 const solc = require('solc');
+const generateHMAC = (() => {
+    const key = crypto.randomBytes(32).toString('hex'); // Generate a random key
+
+    return function(input) {
+        const hmac = crypto.createHmac('sha256', key);
+        hmac.update(input);
+        return 'H' + hmac.digest('hex');
+    };
+})();
+const hashArray = x => generateHMAC(JSON.stringify(x));
 
 // Dummy array of Solidity contract strings
 const contracts = [
@@ -64,7 +74,7 @@ contract MegaContract {
 // Add each contract as a member
 contractNames.forEach(name => {
   for (const baseName of Object.keys(output.contracts[name]))
-    megaContract += `  ${baseName} public ${baseName.toLowerCase()};\n`;
+    megaContract += `  ${baseName} public ${generateHMAC(baseName)};\n`;
 });
 
 // Constructor to instantiate each contract
@@ -74,7 +84,7 @@ megaContract += `
 
 contractNames.forEach(name => {
   for (const baseName of Object.keys(output.contracts[name]))
-    megaContract += `    ${baseName.toLowerCase()} = new ${baseName}();\n`;
+    megaContract += `    ${generateHMAC(baseName)} = new ${baseName}();\n`;
 });
 
 megaContract += `  }\n`;
@@ -86,13 +96,13 @@ contractNames.forEach(name => {
 
     contractOutput.forEach(item => {
       if (item.type === 'function') {
-        const signature = `${item.name}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
+        const signature = `${hashArray([baseName, item.name])}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
         const params = item.inputs.map((_, idx) => `arg${idx}`).join(', ');
         const returnType = item.outputs.length > 0 ? item.outputs[0].type : 'void';
 
         megaContract += `
   function ${signature} public ${returnType !== 'void' ? `returns (${returnType})` : ''} {
-    return ${baseName.toLowerCase()}.${item.name}(${params});
+    return ${generateHMAC(baseName)}.${item.name}(${params});
   }\n`;
       }
     });
