@@ -3,6 +3,7 @@ const solc = require('solc');
 // Dummy array of Solidity contract strings
 const contracts = [
   `
+  // SPDX-License-Identifier: 0BSD
   pragma solidity ^0.8.0;
 
   contract ContractA {
@@ -12,6 +13,7 @@ const contracts = [
   }
   `,
   `
+  // SPDX-License-Identifier: 0BSD
   pragma solidity ^0.8.0;
 
   contract ContractB {
