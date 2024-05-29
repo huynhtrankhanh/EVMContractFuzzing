@@ -81,21 +81,22 @@ megaContract += `  }\n`;
 
 // Append methods from each contract
 contractNames.forEach(name => {
-  const baseName = name.split('.')[0];
-  const contractOutput = output.contracts[name][baseName].abi;
+  for (const baseName of Object.keys(output.contracts[name])) {
+    const contractOutput = output.contracts[name][baseName].abi;
 
-  contractOutput.forEach(item => {
-    if (item.type === 'function') {
-      const signature = `${item.name}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
-      const params = item.inputs.map((_, idx) => `arg${idx}`).join(', ');
-      const returnType = item.outputs.length > 0 ? item.outputs[0].type : 'void';
+    contractOutput.forEach(item => {
+      if (item.type === 'function') {
+        const signature = `${item.name}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
+        const params = item.inputs.map((_, idx) => `arg${idx}`).join(', ');
+        const returnType = item.outputs.length > 0 ? item.outputs[0].type : 'void';
 
-      megaContract += `
+        megaContract += `
   function ${signature} public ${returnType !== 'void' ? `returns (${returnType})` : ''} {
     return ${baseName.toLowerCase()}.${item.name}(${params});
   }\n`;
-    }
-  });
+      }
+    });
+  }
 });
 
 megaContract += `
