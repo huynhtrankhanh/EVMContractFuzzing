@@ -1,4 +1,5 @@
 const solc = require('solc');
+const crypto = require('crypto');
 const generateHMAC = (() => {
     const key = crypto.randomBytes(32).toString('hex'); // Generate a random key
 
