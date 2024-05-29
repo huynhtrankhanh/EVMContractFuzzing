@@ -98,7 +98,7 @@ contractNames.forEach(name => {
     contractOutput.forEach(item => {
       if (item.type === 'function') {
         const signature = `${hashArray([baseName, item.name])}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
-        const params = item.inputs.map((_, idx) => `arg${idx}`).join(', ');
+        const params = item.inputs.map((_, idx) => generateHMAC(`arg${idx}`)).join(', ');
         const returnType = item.outputs.length > 0 ? item.outputs[0].type : 'void';
 
         megaContract += `
