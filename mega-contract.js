@@ -63,8 +63,8 @@ contract MegaContract {
 
 // Add each contract as a member
 contractNames.forEach(name => {
-  const baseName = name.split('.')[0]; // Strip .sol extension
-  megaContract += `  ${baseName} public ${baseName.toLowerCase()};\n`;
+  for (const baseName of Object.keys(output.contracts[name]))
+    megaContract += `  ${baseName} public ${baseName.toLowerCase()};\n`;
 });
 
 // Constructor to instantiate each contract
@@ -73,8 +73,8 @@ megaContract += `
 `;
 
 contractNames.forEach(name => {
-  const baseName = name.split('.')[0];
-  megaContract += `    ${baseName.toLowerCase()} = new ${baseName}();\n`;
+  for (const baseName of Object.keys(output.contracts[name]))
+    megaContract += `    ${baseName.toLowerCase()} = new ${baseName}();\n`;
 });
 
 megaContract += `  }\n`;
