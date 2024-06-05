@@ -1,5 +1,10 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
 const solc = require('solc');
 const crypto = require('crypto');
+
 const generateHMAC = (() => {
     const key = crypto.randomBytes(32).toString('hex'); // Generate a random key
 
@@ -9,57 +14,49 @@ const generateHMAC = (() => {
         return 'H' + hmac.digest('hex');
     };
 })();
+
 const hashArray = x => generateHMAC(JSON.stringify(x));
 
-// Dummy array of Solidity contract strings
-const contracts = [
-  `
-  // SPDX-License-Identifier: 0BSD
-  pragma solidity ^0.8.0;
-
-  contract ContractA {
-      function foo() public pure returns (string memory) {
-          return "foo";
-      }
-  }
-  `,
-  `
-  // SPDX-License-Identifier: 0BSD
-  pragma solidity ^0.8.0;
-
-  contract ContractB {
-      function bar() public pure returns (string memory) {
-          return "bar";
-      }
-  }
-  `,
-];
+// Read contract files from command-line arguments
+const filePaths = process.argv.slice(2);
+const contracts = filePaths.map(filePath => fs.readFileSync(filePath, 'utf8'));
 
 // Create input format required by solc compiler
 const input = {
-  language: 'Solidity',
-  sources: contracts.reduce((acc, contract, index) => {
-    acc[`Contract${index}.sol`] = { content: contract };
-    return acc;
-  }, {}),
-  settings: {
-    outputSelection: {
-      '*': {
-        '*': ['*']
-      }
+    language: 'Solidity',
+    sources: filePaths.reduce((acc, filePath, index) => {
+        acc[path.basename(filePath)] = { content: contracts[index] };
+        return acc;
+    }, {}),
+    settings: {
+        outputSelection: {
+            '*': {
+                '*': ['*']
+            }
+        }
     }
-  }
 };
 
-// Compile contracts
-const output = JSON.parse(solc.compile(JSON.stringify(input)));
+// Helper function to resolve imports
+function findImports(importPath) {
+    try {
+        const resolvedPath = path.resolve(importPath);
+        const source = fs.readFileSync(resolvedPath, 'utf8');
+        return { contents: source };
+    } catch (e) {
+        return { error: 'File not found' };
+    }
+}
 
-// error handling
+// Compile contracts
+const output = JSON.parse(solc.compile(JSON.stringify(input), { import: findImports }));
+
+// Error handling
 if (output.errors) {
-  output.errors.forEach(err => {
-    console.error(err.formattedMessage);
-  });
-  throw new Error("Compilation failed");
+    output.errors.forEach(err => {
+        console.error(err.formattedMessage);
+    });
+    throw new Error("Compilation failed");
 }
 
 // Extract contract names
@@ -74,8 +71,8 @@ contract MegaContract {
 
 // Add each contract as a member
 contractNames.forEach(name => {
-  for (const baseName of Object.keys(output.contracts[name]))
-    megaContract += `  ${baseName} public ${generateHMAC(baseName)};\n`;
+    for (const baseName of Object.keys(output.contracts[name]))
+        megaContract += `  ${baseName} public ${generateHMAC(baseName)};\n`;
 });
 
 // Constructor to instantiate each contract
@@ -84,30 +81,30 @@ megaContract += `
 `;
 
 contractNames.forEach(name => {
-  for (const baseName of Object.keys(output.contracts[name]))
-    megaContract += `    ${generateHMAC(baseName)} = new ${baseName}();\n`;
+    for (const baseName of Object.keys(output.contracts[name]))
+        megaContract += `    ${generateHMAC(baseName)} = new ${baseName}();\n`;
 });
 
 megaContract += `  }\n`;
 
 // Append methods from each contract
 contractNames.forEach(name => {
-  for (const baseName of Object.keys(output.contracts[name])) {
-    const contractOutput = output.contracts[name][baseName].abi;
+    for (const baseName of Object.keys(output.contracts[name])) {
+        const contractOutput = output.contracts[name][baseName].abi;
 
-    contractOutput.forEach(item => {
-      if (item.type === 'function') {
-        const signature = `${hashArray([baseName, item.name])}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
-        const params = item.inputs.map((_, idx) => generateHMAC(`arg${idx}`)).join(', ');
-        const returnType = item.outputs.length > 0 ? item.outputs[0].type : 'void';
+        contractOutput.forEach(item => {
+            if (item.type === 'function') {
+                const signature = `${hashArray([baseName, item.name])}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
+                const params = item.inputs.map((_, idx) => generateHMAC(`arg${idx}`)).join(', ');
+                const returnType = item.outputs.length > 0 ? item.outputs[0].type : 'void';
 
-        megaContract += `
+                megaContract += `
   function ${signature} public ${returnType !== 'void' ? `returns (${returnType})` : ''} {
     return ${generateHMAC(baseName)}.${item.name}(${params});
   }\n`;
-      }
-    });
-  }
+            }
+        });
+    }
 });
 
 megaContract += `
