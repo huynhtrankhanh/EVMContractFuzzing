@@ -93,14 +93,29 @@ contractNames.forEach(name => {
 
         contractOutput.forEach(item => {
             if (item.type === 'function') {
-                const signature = `${hashArray([baseName, item.name])}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)`;
+                const isPayable = item.stateMutability === 'payable' ? ' payable' : '';
+
+                const signature = `${hashArray([baseName, item.name])}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)${isPayable}`;
+                
                 const params = item.inputs.map((_, idx) => generateHMAC(`arg${idx}`)).join(', ');
-                const returnType = item.outputs.length > 0 ? item.outputs[0].type : 'void';
+
+                const returnType = item.outputs.length > 0 ? item.outputs.map(output => output.type).join(', ') : 'void';
 
                 megaContract += `
-  function ${signature} public ${returnType !== 'void' ? `returns (${returnType})` : ''} {
-    return ${generateHMAC(baseName)}.${item.name}(${params});
-  }\n`;
+  function ${signature} public ${isPayable} ${returnType !== 'void' ? `returns (${returnType})` : ''} {
+    `;
+
+                if (returnType !== 'void') {
+                    megaContract += `return `;
+                }
+
+                megaContract += `${generateHMAC(baseName)}.${item.name}(${params}`;
+
+                if (isPayable.length > 0) {
+                    megaContract += `).value(msg.value`;
+                }
+
+                megaContract += `);\n  }\n`;
             }
         });
     }
