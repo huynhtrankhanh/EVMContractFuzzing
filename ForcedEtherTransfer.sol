@@ -10,6 +10,7 @@ contract ForcedEtherTransfer {
 }
 
 contract SelfDestructContract {
+    event AssertionFailed();
     constructor(address payable _target) payable {
         // Transfer all the ether stored in this contract to the target address and self-destruct
         selfdestruct(_target);

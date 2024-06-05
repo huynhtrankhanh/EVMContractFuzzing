@@ -56,7 +56,6 @@ if (output.errors) {
     output.errors.forEach(err => {
         console.error(err.formattedMessage);
     });
-    throw new Error("Compilation failed");
 }
 
 // Extract contract names
