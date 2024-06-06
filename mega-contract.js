@@ -2,8 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const solc = require('solc');
 const crypto = require('crypto');
+const parser = require('@solidity-parser/parser');
 
 const generateHMAC = (() => {
     const key = crypto.randomBytes(32).toString('hex'); // Generate a random key
@@ -21,45 +21,50 @@ const hashArray = x => generateHMAC(JSON.stringify(x));
 const filePaths = process.argv.slice(2);
 const contracts = filePaths.map(filePath => fs.readFileSync(filePath, 'utf8'));
 
-// Create input format required by solc compiler
-const input = {
-    language: 'Solidity',
-    sources: filePaths.reduce((acc, filePath, index) => {
-        acc[path.basename(filePath)] = { content: contracts[index] };
-        return acc;
-    }, {}),
-    settings: {
-        outputSelection: {
-            '*': {
-                '*': ['*']
-            }
-        }
-    }
-};
-
-// Helper function to resolve imports
-function findImports(importPath) {
+// Function to parse Solidity contracts
+function parseContract(content) {
     try {
-        const resolvedPath = path.resolve(importPath);
-        const source = fs.readFileSync(resolvedPath, 'utf8');
-        return { contents: source };
+        return parser.parse(content);
     } catch (e) {
-        return { error: 'File not found' };
+        console.error('Error parsing contract:', e);
+        process.exit(1);
     }
 }
 
-// Compile contracts
-const output = JSON.parse(solc.compile(JSON.stringify(input), { import: findImports }));
+// Parse contracts and extract details
+let contractDetails = {};
+filePaths.forEach((filePath, index) => {
+    const content = contracts[index];
+    const parsed = parseContract(content);
+    
+    parsed.children.forEach(node => {
+        if (node.type === 'ContractDefinition') {
+            const contractName = node.name;
+            contractDetails[contractName] = {
+                functions: []
+            };
+            
+            node.subNodes.forEach(subNode => {
+                if (subNode.type === 'FunctionDefinition' && subNode.name) {
+                    const inputs = (subNode.parameters.parameters || []).map(param => ({
+                        type: param.typeName.name,
+                        name: param.name
+                    }));
+                    const outputs = subNode.returnParameters ? (subNode.returnParameters.parameters || []).map(param => ({
+                        type: param.typeName.name
+                    })) : [];
 
-// Error handling
-if (output.errors) {
-    output.errors.forEach(err => {
-        console.error(err.formattedMessage);
+                    contractDetails[contractName].functions.push({
+                        name: subNode.name,
+                        inputs,
+                        outputs,
+                        stateMutability: subNode.stateMutability
+                    });
+                }
+            });
+        }
     });
-}
-
-// Extract contract names
-const contractNames = Object.keys(output.contracts);
+});
 
 // Generate mega contract
 let megaContract = `
@@ -70,9 +75,8 @@ contract MegaContract {
 `;
 
 // Add each contract as a member
-contractNames.forEach(name => {
-    for (const baseName of Object.keys(output.contracts[name]))
-        megaContract += `  ${baseName} public ${generateHMAC(baseName)};\n`;
+Object.keys(contractDetails).forEach(contractName => {
+    megaContract += `  ${contractName} public ${generateHMAC(contractName)};\n`;
 });
 
 // Constructor to instantiate each contract
@@ -80,46 +84,37 @@ megaContract += `
   constructor() {
 `;
 
-contractNames.forEach(name => {
-    for (const baseName of Object.keys(output.contracts[name]))
-        megaContract += `    ${generateHMAC(baseName)} = new ${baseName}();\n`;
+Object.keys(contractDetails).forEach(contractName => {
+    megaContract += `    ${generateHMAC(contractName)} = new ${contractName}();\n`;
 });
 
 megaContract += `  }\n`;
 
 // Append methods from each contract
-contractNames.forEach(name => {
-    for (const baseName of Object.keys(output.contracts[name])) {
-        const contractOutput = output.contracts[name][baseName].abi;
+Object.keys(contractDetails).forEach(contractName => {
+    const contract = contractDetails[contractName];
+    contract.functions.forEach(func => {
+        const isPayable = func.stateMutability === 'payable' ? ' payable' : '';
+        const signature = `${hashArray([contractName, func.name])}(` + func.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)${isPayable}`;
+        const params = func.inputs.map((_, idx) => generateHMAC(`arg${idx}`)).join(', ');
+        const returnType = func.outputs.length > 0 ? func.outputs.map(output => output.type).join(', ') : 'void';
 
-        contractOutput.forEach(item => {
-            if (item.type === 'function') {
-                const isPayable = item.stateMutability === 'payable' ? ' payable' : '';
-
-                const signature = `${hashArray([baseName, item.name])}(` + item.inputs.map((input, idx) => `${input.type} arg${idx}`).join(', ') + `)${isPayable}`;
-                
-                const params = item.inputs.map((_, idx) => generateHMAC(`arg${idx}`)).join(', ');
-
-                const returnType = item.outputs.length > 0 ? item.outputs.map(output => output.type).join(', ') : 'void';
-
-                megaContract += `
+        megaContract += `
   function ${signature} public ${isPayable} ${returnType !== 'void' ? `returns (${returnType})` : ''} {
     `;
 
-                if (returnType !== 'void') {
-                    megaContract += `return `;
-                }
+        if (returnType !== 'void') {
+            megaContract += `return `;
+        }
 
-                megaContract += `${generateHMAC(baseName)}.${item.name}(${params}`;
+        megaContract += `${generateHMAC(contractName)}.${func.name}(${params}`;
 
-                if (isPayable.length > 0) {
-                    megaContract += `).value(msg.value`;
-                }
+        if (isPayable.length > 0) {
+            megaContract += `).value(msg.value`;
+        }
 
-                megaContract += `);\n  }\n`;
-            }
-        });
-    }
+        megaContract += `);\n  }\n`;
+    });
 });
 
 megaContract += `
