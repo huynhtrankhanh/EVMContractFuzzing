@@ -64,6 +64,7 @@ const contractNames = Object.keys(output.contracts);
 // Generate mega contract
 let megaContract = `
 pragma solidity ^0.8.0;
+${filePaths.map(x => "import " + JSON.stringify(x) + ";").join("\n")}
 
 contract MegaContract {
 `;
